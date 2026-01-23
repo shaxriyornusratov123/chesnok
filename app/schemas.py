@@ -1,13 +1,17 @@
+from datetime import datetime
+
 from pydantic import BaseModel
 
 
-class UserCreateRequest(BaseModel):
-    name: str
-    age: int
-    is_active: bool | None = None
+class PostCreateRequest(BaseModel):
+    title: str
+    body: str
 
 
-class UserCreateResponse(BaseModel):
+class PostListResponse(BaseModel):
     id: int
-    age: int
+    title: str
+    slug: str
+    body: str
     is_active: bool
+    created_at: datetime
