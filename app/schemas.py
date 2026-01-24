@@ -15,3 +15,9 @@ class PostListResponse(BaseModel):
     body: str
     is_active: bool
     created_at: datetime
+
+
+class PostUpdateRequest(BaseModel):
+    title: str | None = None
+    body: str | None = None
+    is_active: bool | None = None
