@@ -21,3 +21,33 @@ class PostUpdateRequest(BaseModel):
     title: str | None = None
     body: str | None = None
     is_active: bool | None = None
+
+
+class CategoryCreateRequest(BaseModel):
+    name: str
+    slug: str
+
+
+class CategoryUpdateRequest(BaseModel):
+    name: str | None = None
+
+
+class CategoryListResponse(BaseModel):
+    id: int
+    name: str
+    slug: str
+
+
+class TagCreateRequest(BaseModel):
+    name: str
+    slug: str
+
+
+class TagUpdateRequest(BaseModel):
+    name: str | None = None
+
+
+class TagListResponse(BaseModel):
+    id: int
+    name: str
+    slug: str

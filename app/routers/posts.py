@@ -1,7 +1,7 @@
 from fastapi import APIRouter, HTTPException
 from sqlalchemy import select
 
-from app.models import Post, Media
+from app.models import Post
 from app.database import db_dep
 from app.schemas import PostListResponse, PostCreateRequest, PostUpdateRequest
 from app.utils import generate_slug
@@ -109,48 +109,3 @@ async def post_delete(session: db_dep, post_id: int):
 
     session.delete(post)
     session.commit()
-
-
-########################################################################
-########################################################################
-
-
-@router.get("/media/{media_id}")
-async def get_media(session: db_dep, media_id: int):
-    stmt = select(Media).where(Media.id == media_id)
-    res = session.execute(stmt)
-    media = res.scalar().first()
-
-    if not Media:
-        raise HTTPException(status_code=404, detail="Media not found")
-
-    session.commit()
-    session.refresh(media)
-
-    return media
-
-
-@router.post("/media/{media_id}")
-async def update_media(session: db_dep, media_id: int):
-    media = session.query(Media).filter(Media.id == media_id).first()
-
-    if not media:
-        raise HTTPException(status_code=404, detail="Media not found")
-
-    session.commit()
-    session.refresh(media)
-
-    return media
-
-
-@router.delete("/media/{media_id}/")
-async def media_delete(session: db_dep, media_id: int):
-    media = session.query(Post).filter(Media.id == media_id).first()
-
-    if not media:
-        raise HTTPException(status_code=404, detail="Post not found")
-
-    session.delete(media)
-    session.commit()
-
-    return media

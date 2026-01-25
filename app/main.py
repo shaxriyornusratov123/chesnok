@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 
-from app.routers import posts_router
+from app.routers import posts_router, category_router, tag_router
 
 
 app = FastAPI(
@@ -9,3 +9,7 @@ app = FastAPI(
 )
 
 app.include_router(posts_router)
+
+app.include_router(category_router)
+
+app.include_router(tag_router)
