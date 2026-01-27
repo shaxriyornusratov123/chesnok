@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from fastapi import APIRouter, HTTPException
 from sqlalchemy import select
 
@@ -18,7 +20,7 @@ async def get_posts_list(session: db_dep, is_active: bool = None):
 
     stmt = stmt.order_by(Post.created_at.desc())
     res = session.execute(stmt)
-    return res.scalar().all()
+    return res.scalars().all()
 
 
 @router.get("/{slug}", response_model=PostListResponse)
@@ -33,12 +35,47 @@ async def get_post(session: db_dep, slug: str):
     return post
 
 
+@router.get("/{created_at}/", response_model=list[PostListResponse])
+async def get_posts_by_created_at(session: db_dep, created_at: datetime):
+    stmt = select(Post).where(Post.created_at == created_at)
+    res = session.execute(stmt)
+    posts = res.scalars().all()
+    return posts
+
+
+@router.get("/{category_id}/", response_model=list[PostListResponse])
+async def get_posts_by_category(session: db_dep, category_id: int):
+    stmt = select(Post).where(Post.category_id == category_id)
+    res = session.execute(stmt)
+    posts = res.scalars().all()
+    return posts
+
+
+@router.get("/{mins_read}/", response_model=list[PostListResponse])
+async def get_posts_by_mins_read(session: db_dep, mins_read: int):
+    stmt = select(Post).where(Post.mins_read == mins_read)
+    res = session.execute(stmt)
+    posts = res.scalars().all()
+    return posts
+
+
+@router.get("/{likes_count}/", response_model=list[PostListResponse])
+async def get_posts_by_likes_count(session: db_dep, likes_count: int):
+    stmt = select(Post).where(Post.likes_count == likes_count)
+    res = session.execute(stmt)
+    posts = res.scalars().all()
+    return posts
+
+
 @router.post("/create/")
 async def post_create(session: db_dep, create_data: PostCreateRequest):
     post = Post(
+        user_id=create_data.user_id,
         title=create_data.title,
         body=create_data.body,
         slug=generate_slug(create_data.title),
+        category_id=create_data.category_id,
+        created_at=create_data.created_at,
     )
 
     session.add(post)
@@ -84,7 +121,7 @@ async def post_update_patch(
     if not post:
         raise HTTPException(status_code=404, detail="Post not found")
 
-    if update_data.titlez:
+    if update_data.title:
         post.title = update_data.title
         post.slug = generate_slug(update_data.title)
 
