@@ -6,14 +6,26 @@ from app.database import db_dep
 from app.schemas import TagCreateRequest, TagListResponse, TagUpdateRequest
 from app.utils import generate_slug
 
-router = APIRouter(prefix="/tag", tags=["Tag"])
+router = APIRouter(prefix="/tag", tags=["Tags"])
+
+
+@router.get("/list/", response_model=list[TagListResponse])
+async def get_tag_list(session: db_dep):
+    stmt = select(Tag)
+    res = session.execute(stmt)
+    tag = res.scalars().all()
+
+    if not tag:
+        raise HTTPException(status_code=404, detail="Tag not found")
+
+    return tag
 
 
 @router.get("/{slug}", response_model=TagListResponse)
 async def get_tag(session: db_dep, slug: str):
     stmt = select(Tag).where(Tag.slug.like(f"%{slug}%"))
     res = session.execute(stmt)
-    tag = res.scalar().first()
+    tag = res.scalars().first()
 
     if not tag:
         raise HTTPException(status_code=404, detail="Tag not found")
@@ -36,10 +48,10 @@ async def tag_create(session: db_dep, create_data: TagCreateRequest):
 
 
 @router.put("{tag_id}", response_model=TagUpdateRequest)
-async def tag_update(session: db_dep, tag_id: int, update_data: TagUpdateRequest):
+async def tag_update_put(session: db_dep, tag_id: int, update_data: TagUpdateRequest):
     stmt = select(Tag).where(Tag.id == tag_id)
     res = session.execute(stmt)
-    tag = res.scalar().first()
+    tag = res.scalars().first()
 
     if not tag:
         raise HTTPException(status_code=404, detail="Tag not found")
@@ -57,7 +69,7 @@ async def tag_update(session: db_dep, tag_id: int, update_data: TagUpdateRequest
 async def tag_update(session: db_dep, tag_id: int, update_data: TagUpdateRequest):
     stmt = select(Tag).where(Tag.id == tag_id)
     res = session.execute(stmt)
-    tag = res.scalar().first()
+    tag = res.scalars().first()
 
     if not tag:
         raise HTTPException(status_code=404, detail="Tag not found")
@@ -72,10 +84,10 @@ async def tag_update(session: db_dep, tag_id: int, update_data: TagUpdateRequest
 
 
 @router.delete("{tag_id}")
-async def delete_tag(session: db_dep, tag_id: int):
+async def delete_tag_patch(session: db_dep, tag_id: int):
     stmt = select(Tag).where(Tag.id == tag_id)
     res = session.execute(stmt)
-    tag = res.scalar().first()
+    tag = res.scalars().first()
 
     if not tag:
         raise HTTPException(status_code=404, detail="Tag not found")

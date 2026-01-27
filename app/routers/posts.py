@@ -10,7 +10,7 @@ router = APIRouter(prefix="/posts", tags=["Posts"])
 
 
 @router.get("/", response_model=list[PostListResponse])
-async def get_posts(session: db_dep, is_active: bool = None):
+async def get_posts_list(session: db_dep, is_active: bool = None):
     stmt = select(Post)
 
     if is_active is not None:
@@ -25,7 +25,7 @@ async def get_posts(session: db_dep, is_active: bool = None):
 async def get_post(session: db_dep, slug: str):
     stmt = select(Post).where(Post.slug.like(f"%{slug}%"))
     res = session.execute(stmt)
-    post = res.scalar().first()
+    post = res.scalars().first()
 
     if not post:
         raise HTTPException(status_code=404, detail="Post not found")
@@ -33,7 +33,7 @@ async def get_post(session: db_dep, slug: str):
     return post
 
 
-@router.get("/create/")
+@router.post("/create/")
 async def post_create(session: db_dep, create_data: PostCreateRequest):
     post = Post(
         title=create_data.title,
@@ -52,7 +52,7 @@ async def post_create(session: db_dep, create_data: PostCreateRequest):
 async def post_update(session: db_dep, post_id: int, update_data: PostUpdateRequest):
     stmt = select(Post).where(Post.id == post_id)
     res = session.execute(stmt)
-    post = res.scalar().first()
+    post = res.scalars().first()
 
     if not post:
         raise HTTPException(status_code=404, detail="Post not found")
@@ -74,10 +74,12 @@ async def post_update(session: db_dep, post_id: int, update_data: PostUpdateRequ
 
 
 @router.patch("/{post_id}/")
-async def post_update(session: db_dep, post_id: int, update_data: PostUpdateRequest):
+async def post_update_patch(
+    session: db_dep, post_id: int, update_data: PostUpdateRequest
+):
     stmt = select(Post).where(Post.id == post_id)
     res = session.execute(stmt)
-    post = res.scalar().first()
+    post = res.scalars().first()
 
     if not post:
         raise HTTPException(status_code=404, detail="Post not found")
@@ -102,7 +104,7 @@ async def post_update(session: db_dep, post_id: int, update_data: PostUpdateRequ
 async def post_delete(session: db_dep, post_id: int):
     stmt = select(Post).where(Post.id == post_id)
     res = session.execute(stmt)
-    post = res.scalar().first()
+    post = res.scalars().first()
 
     if not post:
         raise HTTPException(status_code=404, detail="Post not found")
