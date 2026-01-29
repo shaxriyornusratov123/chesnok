@@ -3,7 +3,7 @@ from datetime import datetime
 from fastapi import APIRouter, HTTPException
 from sqlalchemy import select
 
-from app.models import Post
+from app.models import Post, PostTag, Tag, User
 from app.database import db_dep
 from app.schemas import PostListResponse, PostCreateRequest, PostUpdateRequest
 from app.utils import generate_slug
@@ -12,15 +12,41 @@ router = APIRouter(prefix="/posts", tags=["Posts"])
 
 
 @router.get("/", response_model=list[PostListResponse])
-async def get_posts_list(session: db_dep, is_active: bool = None):
-    stmt = select(Post)
+async def get_posts_list(
+    session: db_dep,
+    is_active: bool | None = None,
+    category_id: int | None = None,
+    tag_id: int | None = None,
+):
+    stmt = (
+        select(Post)
+        .join(PostTag, Post.id == PostTag.post_id)
+        .join(Tag, PostTag.tag_id == Tag.id)
+    )
 
     if is_active is not None:
         stmt = stmt.where(Post.is_active == is_active)
 
+    if category_id:
+        stmt = stmt.where(Post.category_id == category_id)
+
+    if tag_id:
+        stmt = stmt.where(Tag.id == tag_id)
+
     stmt = stmt.order_by(Post.created_at.desc())
     res = session.execute(stmt)
     return res.scalars().all()
+
+
+@router.get("/{user_id}", response_model=list[PostListResponse])
+async def filter_posts_by_author(session: db_dep, user_id: int):
+    stmt = select(Post).join(User, Post.user_id == User.id)
+
+    if user_id:
+        stmt = stmt.where(User.id == user_id)
+        stmt = stmt.order_by(Post.created_at.desc())
+        res = session.execute(stmt)
+        return res.scalars().all()
 
 
 @router.get("/{slug}", response_model=PostListResponse)
@@ -38,14 +64,6 @@ async def get_post(session: db_dep, slug: str):
 @router.get("/{created_at}/", response_model=list[PostListResponse])
 async def get_posts_by_created_at(session: db_dep, created_at: datetime):
     stmt = select(Post).where(Post.created_at == created_at)
-    res = session.execute(stmt)
-    posts = res.scalars().all()
-    return posts
-
-
-@router.get("/{category_id}/", response_model=list[PostListResponse])
-async def get_posts_by_category(session: db_dep, category_id: int):
-    stmt = select(Post).where(Post.category_id == category_id)
     res = session.execute(stmt)
     posts = res.scalars().all()
     return posts
