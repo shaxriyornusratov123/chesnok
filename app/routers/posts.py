@@ -1,11 +1,11 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 
 from fastapi import APIRouter, HTTPException
 from sqlalchemy import select
 
 from app.models import Post, PostTag, Tag, User
 from app.database import db_dep
-from app.schemas import PostListResponse, PostCreateRequest, PostUpdateRequest
+from app.schemas.posts import PostListResponse, PostCreateRequest, PostUpdateRequest
 from app.utils import generate_slug
 
 router = APIRouter(prefix="/posts", tags=["Posts"])
@@ -38,15 +38,30 @@ async def get_posts_list(
     return res.scalars().all()
 
 
-@router.get("/{user_id}", response_model=list[PostListResponse])
-async def filter_posts_by_author(session: db_dep, user_id: int):
+@router.get("/{author_id}", response_model=list[PostListResponse])
+async def filter_posts_by_author(session: db_dep, author_id: int):
     stmt = select(Post).join(User, Post.user_id == User.id)
 
-    if user_id:
-        stmt = stmt.where(User.id == user_id)
+    if author_id:
+        stmt = stmt.where(
+            User.id == author_id and User.is_staff == True & User.is_active == True
+        )
         stmt = stmt.order_by(Post.created_at.desc())
         res = session.execute(stmt)
         return res.scalars().all()
+
+
+@router.get("/trending/", response_model=list[PostListResponse])
+async def get_trending_posts(session: db_dep):
+    stmt = (
+        select(Post)
+        .where(Post.created_at >= datetime.now() - timedelta(days=7))
+        .order_by(Post.likes_count.desc())
+        .limit(5)
+    )
+    res = session.execute(stmt)
+    post = res.scalars().all()
+    return post
 
 
 @router.get("/{slug}", response_model=PostListResponse)
@@ -80,6 +95,14 @@ async def get_posts_by_mins_read(session: db_dep, mins_read: int):
 @router.get("/{likes_count}/", response_model=list[PostListResponse])
 async def get_posts_by_likes_count(session: db_dep, likes_count: int):
     stmt = select(Post).where(Post.likes_count == likes_count)
+    res = session.execute(stmt)
+    posts = res.scalars().all()
+    return posts
+
+
+@router.get("/search/", response_model=list[PostListResponse])
+async def search_posts(session: db_dep, key_word: str):
+    stmt = select(Post).where(Post.title.ilike(f"%{key_word}%"))
     res = session.execute(stmt)
     posts = res.scalars().all()
     return posts

@@ -6,6 +6,8 @@ from app.routers import (
     tag_router,
     user_router,
     comment_router,
+    weather_router,
+    auth_router,
 )
 
 
@@ -19,3 +21,5 @@ app.include_router(category_router)
 app.include_router(tag_router)
 app.include_router(user_router)
 app.include_router(comment_router)
+app.include_router(weather_router)
+app.include_router(auth_router)

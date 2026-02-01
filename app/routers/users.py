@@ -5,7 +5,7 @@ from sqlalchemy import select
 
 from app.models import User
 from app.database import db_dep
-from app.schemas import UserCreateRequest, UserListResponse, UserUpdateRequest
+from app.schemas.users import UserCreateRequest, UserListResponse, UserUpdateRequest
 
 router = APIRouter(prefix="/users", tags=["Users"])
 
@@ -58,6 +58,18 @@ async def get_users_by_posts_count(session: db_dep, posts_count: int):
     stmt = select(User).where(User.posts_count == posts_count)
     res = session.execute(stmt)
     return res.scalars().all()
+
+
+@router.get("/{email}/", response_model=list[UserListResponse])
+async def get_user_by_email(session: db_dep, email: str):
+    stmt = select(User).where(User.email == email)
+    res = session.execute(stmt)
+    user = res.scalars().first()
+
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    return user
 
 
 @router.post("/create/")

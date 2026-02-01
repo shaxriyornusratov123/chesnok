@@ -2,7 +2,7 @@ from fastapi import APIRouter
 
 from app.models import Comment
 from app.database import db_dep
-from app.schemas import CommentCreateRequest
+from app.schemas.comments import CommentCreateRequest
 
 
 router = APIRouter(prefix="/comments", tags=["Comments"])

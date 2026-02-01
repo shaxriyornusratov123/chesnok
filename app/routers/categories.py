@@ -3,7 +3,7 @@ from sqlalchemy import select
 
 from app.models import Category
 from app.database import db_dep
-from app.schemas import (
+from app.schemas.categories import (
     CategoryCreateRequest,
     CategoryUpdateRequest,
     CategoryListResponse,
