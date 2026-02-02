@@ -3,7 +3,7 @@ from datetime import datetime, timedelta
 from fastapi import APIRouter, HTTPException
 from sqlalchemy import select
 
-from app.models import Post, PostTag, Tag, User
+from app.models import Post, PostTag, Tag
 from app.database import db_dep
 from app.schemas.posts import PostListResponse, PostCreateRequest, PostUpdateRequest
 from app.utils import generate_slug
@@ -38,17 +38,17 @@ async def get_posts_list(
     return res.scalars().all()
 
 
-@router.get("/{author_id}", response_model=list[PostListResponse])
-async def filter_posts_by_author(session: db_dep, author_id: int):
-    stmt = select(Post).join(User, Post.user_id == User.id)
+# @router.get("/{author_id}", response_model=list[PostListResponse])
+# async def filter_posts_by_author(session: db_dep, author_id: int):
+#     stmt = select(Post).join(User, Post.user_id == User.id)
 
-    if author_id:
-        stmt = stmt.where(
-            User.id == author_id and User.is_staff == True & User.is_active == True
-        )
-        stmt = stmt.order_by(Post.created_at.desc())
-        res = session.execute(stmt)
-        return res.scalars().all()
+#     if author_id:
+#         stmt = stmt.where(
+#             User.id == author_id and User.is_staff == True & User.is_active == True
+#         )
+#         stmt = stmt.order_by(Post.created_at.desc())
+#         res = session.execute(stmt)
+#         return res.scalars().all()
 
 
 @router.get("/trending/", response_model=list[PostListResponse])

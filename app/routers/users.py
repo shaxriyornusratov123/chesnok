@@ -46,7 +46,7 @@ async def get_all_users(session: db_dep, is_active: bool = None):
     return res.scalars().all()
 
 
-@router.get("/{created_at}", response_model=list[UserListResponse])
+@router.get("/{created_at}", response_model=UserListResponse)
 async def get_users_by_created_at(session: db_dep, created_at: datetime):
     stmt = select(User).where(User.created_at == created_at)
     res = session.execute(stmt)
@@ -60,7 +60,7 @@ async def get_users_by_posts_count(session: db_dep, posts_count: int):
     return res.scalars().all()
 
 
-@router.get("/{email}/", response_model=list[UserListResponse])
+@router.get("/", response_model=list[UserListResponse])
 async def get_user_by_email(session: db_dep, email: str):
     stmt = select(User).where(User.email == email)
     res = session.execute(stmt)
