@@ -10,9 +10,11 @@ dependencies = [
     "dotenv>=0.9.9",
     "fastapi[standard]>=0.128.0",
     "httpx>=0.28.1",
+    "passlib>=1.7.4",
     "psycopg2-binary>=2.9.11",
     "ruff>=0.14.13",
     "sqlalchemy>=2.0.45",
     "uvicorn>=0.40.0",
     "wikipedia>=1.4.0",
+    "zxcvbn>=4.5.0",
 ]

@@ -5,6 +5,7 @@ from .users import router as user_router
 from .comments import router as comment_router
 from .weather import router as weather_router
 from .auth import router as auth_router
+from .lesson import router as lesson_router
 
 __all__ = [
     "posts_router",
@@ -14,4 +15,5 @@ __all__ = [
     "comment_router",
     "weather_router",
     "auth_router",
+    "lesson_router",
 ]

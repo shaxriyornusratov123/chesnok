@@ -60,7 +60,7 @@ async def get_users_by_posts_count(session: db_dep, posts_count: int):
     return res.scalars().all()
 
 
-@router.get("/", response_model=list[UserListResponse])
+@router.get("/")
 async def get_user_by_email(session: db_dep, email: str):
     stmt = select(User).where(User.email == email)
     res = session.execute(stmt)
