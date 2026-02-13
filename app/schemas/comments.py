@@ -9,7 +9,7 @@ class CommentCreateRequest(BaseModel):
     post_id: int
 
 
-class CommentListresponse(BaseModel):
+class CommentListResponse(BaseModel):
     id: int
     user_id: int
     text: str

@@ -60,9 +60,9 @@ R14: Noone must dare to hate my platform. Write a background task to delete all 
 - `POST /auth/logout/`
 
 
-- posts CRUD
-- category CRUD
-- tag CRUD
-- profession CRUD
-- user CRUD
-- comment CRUD
+- posts CRUD +
+- category CRUD +
+- tag CRUD +
+- profession CRUD +
+- user CRUD +
+- comment CRUD -

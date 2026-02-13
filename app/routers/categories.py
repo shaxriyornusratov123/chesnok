@@ -9,6 +9,7 @@ from app.schemas.categories import (
     CategoryListResponse,
 )
 from app.utils import generate_slug
+from app.dependencies import current_user_basic_dep
 
 router = APIRouter(prefix="/categories", tags=["Categories"])
 
@@ -38,7 +39,10 @@ async def get_post(session: db_dep, slug: str):
 
 
 @router.post("/create/", response_model=CategoryCreateRequest)
-async def create_category(session: db_dep, create_data: CategoryCreateRequest):
+async def create_category(session: db_dep, create_data: CategoryCreateRequest,current_user: current_user_basic_dep):
+    if not (current_user.is_superuser or current_user.is_staff):
+        raise HTTPException(status_code=403, detail="Not authorized to create a category  ")
+
     category = Category(name=create_data.name, slug=generate_slug(create_data.name))
 
     session.add(category)
@@ -50,8 +54,11 @@ async def create_category(session: db_dep, create_data: CategoryCreateRequest):
 
 @router.put("/{categy_id}", response_model=CategoryUpdateRequest)
 async def update_category_put(
-    session: db_dep, category_id: int, update_data: CategoryUpdateRequest
+    session: db_dep, category_id: int, update_data: CategoryUpdateRequest,current_user: current_user_basic_dep
 ):
+    if not (current_user.is_superuser or current_user.is_staff):
+        raise HTTPException(status_code=403, detail="Not authorized to update this category  ")
+
     stmt = select(Category).where(Category.id == category_id)
     res = session.execute(stmt)
     category = res.scalars().first()
@@ -70,8 +77,11 @@ async def update_category_put(
 
 @router.patch("/{categy_id}", response_model=CategoryUpdateRequest)
 async def update_category(
-    session: db_dep, category_id: int, update_data: CategoryUpdateRequest
+    session: db_dep, category_id: int, update_data: CategoryUpdateRequest,current_user: current_user_basic_dep
 ):
+    if not (current_user.is_superuser or current_user.is_staff):
+        raise HTTPException(status_code=403, detail="Not authorized to update this category  ")
+
     stmt = select(Category).where(Category.id == category_id)
     res = session.execute(stmt)
     category = res.scalar().first()
@@ -89,7 +99,10 @@ async def update_category(
 
 
 @router.delete("/{category_id}")
-async def delete_category(session: db_dep, category_id: int):
+async def delete_category(session: db_dep, category_id: int,current_user: current_user_basic_dep):
+    if not (current_user.is_superuser or current_user.is_staff):
+        raise HTTPException(status_code=403, detail="Not authorized to delete this category  ")
+
     stmt = select(Category).where(Category.id == category_id)
     res = session.execute(stmt)
     category = res.scalar().first()

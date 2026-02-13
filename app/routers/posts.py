@@ -1,12 +1,13 @@
 from datetime import datetime, timedelta
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Depends, Request
 from sqlalchemy import select
 
 from app.models import Post, PostTag, Tag
 from app.database import db_dep
 from app.schemas.posts import PostListResponse, PostCreateRequest, PostUpdateRequest
 from app.utils import generate_slug
+from app.dependencies import current_user_basic_dep
 
 router = APIRouter(prefix="/posts", tags=["Posts"])
 
@@ -76,30 +77,6 @@ async def get_post(session: db_dep, slug: str):
     return post
 
 
-@router.get("/{created_at}/", response_model=list[PostListResponse])
-async def get_posts_by_created_at(session: db_dep, created_at: datetime):
-    stmt = select(Post).where(Post.created_at == created_at)
-    res = session.execute(stmt)
-    posts = res.scalars().all()
-    return posts
-
-
-@router.get("/{mins_read}/", response_model=list[PostListResponse])
-async def get_posts_by_mins_read(session: db_dep, mins_read: int):
-    stmt = select(Post).where(Post.mins_read == mins_read)
-    res = session.execute(stmt)
-    posts = res.scalars().all()
-    return posts
-
-
-@router.get("/{likes_count}/", response_model=list[PostListResponse])
-async def get_posts_by_likes_count(session: db_dep, likes_count: int):
-    stmt = select(Post).where(Post.likes_count == likes_count)
-    res = session.execute(stmt)
-    posts = res.scalars().all()
-    return posts
-
-
 @router.get("/search/", response_model=list[PostListResponse])
 async def search_posts(session: db_dep, key_word: str):
     stmt = select(Post).where(Post.title.ilike(f"%{key_word}%"))
@@ -109,15 +86,20 @@ async def search_posts(session: db_dep, key_word: str):
 
 
 @router.post("/create/")
-async def post_create(session: db_dep, create_data: PostCreateRequest):
+async def post_create(session: db_dep, create_data: PostCreateRequest,current_user: current_user_basic_dep):
+    if not (current_user.is_superuser or current_user.is_staff):
+        raise HTTPException(status_code=403, detail="Not authorized to create a post  ")
+
     post = Post(
-        user_id=create_data.user_id,
+        user_id=current_user.id,
         title=create_data.title,
         body=create_data.body,
         slug=generate_slug(create_data.title),
         category_id=create_data.category_id,
         created_at=create_data.created_at,
     )
+
+    
 
     session.add(post)
     session.commit()
@@ -126,8 +108,12 @@ async def post_create(session: db_dep, create_data: PostCreateRequest):
     return post
 
 
+
 @router.put("/{post_id}/")
-async def post_update(session: db_dep, post_id: int, update_data: PostUpdateRequest):
+async def post_update(session: db_dep, post_id: int, update_data: PostUpdateRequest,current_user: current_user_basic_dep):
+    if not (current_user.is_superuser or current_user.id == post_id):
+        raise HTTPException(status_code=403, detail="Not authorized to delete this post  ")
+
     stmt = select(Post).where(Post.id == post_id)
     res = session.execute(stmt)
     post = res.scalars().first()
@@ -135,7 +121,7 @@ async def post_update(session: db_dep, post_id: int, update_data: PostUpdateRequ
     if not post:
         raise HTTPException(status_code=404, detail="Post not found")
 
-    if update_data.titlez:
+    if update_data.title:
         post.title = update_data.title
         post.slug = generate_slug(update_data.title)
 
@@ -151,10 +137,28 @@ async def post_update(session: db_dep, post_id: int, update_data: PostUpdateRequ
     return post
 
 
+
+@router.post("/like/{post_id}")
+async def add_like(session: db_dep, post_id: int):
+    stmt = select(Post).where(Post.id == post_id)
+    post = session.execute(stmt).scalars().first()
+
+    if not post:
+        raise HTTPException(status_code=404, detail="Post not found")
+    
+    
+    post.likes_count += 1
+    session.commit()
+    return {"status": "success", "total_count": post.likes_count}
+
+
 @router.patch("/{post_id}/")
 async def post_update_patch(
-    session: db_dep, post_id: int, update_data: PostUpdateRequest
+    session: db_dep, post_id: int, update_data: PostUpdateRequest,current_user: current_user_basic_dep
 ):
+    if not (current_user.is_superuser or current_user.id == post_id):
+        raise HTTPException(status_code=403, detail="Not authorized to update this post  ")
+    
     stmt = select(Post).where(Post.id == post_id)
     res = session.execute(stmt)
     post = res.scalars().first()
@@ -179,7 +183,10 @@ async def post_update_patch(
 
 
 @router.delete("/{post_id}/")
-async def post_delete(session: db_dep, post_id: int):
+async def post_delete(session: db_dep, post_id: int,current_user: current_user_basic_dep):
+    if not (current_user.is_superuser or current_user.id == post_id):
+        raise HTTPException(status_code=403, detail="Not authorized to delete this post  ")
+
     stmt = select(Post).where(Post.id == post_id)
     res = session.execute(stmt)
     post = res.scalars().first()
@@ -189,3 +196,5 @@ async def post_delete(session: db_dep, post_id: int):
 
     session.delete(post)
     session.commit()
+
+

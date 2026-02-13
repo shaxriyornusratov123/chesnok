@@ -5,6 +5,7 @@ from sqlalchemy import select
 
 from app.models import User
 from app.database import db_dep
+from app.utils import hash_password
 from app.schemas.users import UserCreateRequest, UserListResponse, UserUpdateRequest
 
 router = APIRouter(prefix="/users", tags=["Users"])
@@ -76,7 +77,7 @@ async def get_user_by_email(session: db_dep, email: str):
 async def create_user(session: db_dep, create_data: UserCreateRequest):
     user = User(
         email=create_data.email,
-        password_hash=create_data.password_hash,
+        password_hash=hash_password(create_data.password_hash),
         first_name=create_data.first_name,
         last_name=create_data.last_name,
         profession_id=create_data.profession_id,
