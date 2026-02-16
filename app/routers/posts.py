@@ -1,6 +1,6 @@
 from datetime import datetime, timedelta
 
-from fastapi import APIRouter, HTTPException, Depends, Request
+from fastapi import APIRouter, HTTPException
 from sqlalchemy import select
 
 from app.models import Post, PostTag, Tag
@@ -86,7 +86,11 @@ async def search_posts(session: db_dep, key_word: str):
 
 
 @router.post("/create/")
-async def post_create(session: db_dep, create_data: PostCreateRequest,current_user: current_user_basic_dep):
+async def post_create(
+    session: db_dep,
+    create_data: PostCreateRequest,
+    current_user: current_user_basic_dep,
+):
     if not (current_user.is_superuser or current_user.is_staff):
         raise HTTPException(status_code=403, detail="Not authorized to create a post  ")
 
@@ -99,8 +103,6 @@ async def post_create(session: db_dep, create_data: PostCreateRequest,current_us
         created_at=create_data.created_at,
     )
 
-    
-
     session.add(post)
     session.commit()
     session.refresh(post)
@@ -108,11 +110,17 @@ async def post_create(session: db_dep, create_data: PostCreateRequest,current_us
     return post
 
 
-
 @router.put("/{post_id}/")
-async def post_update(session: db_dep, post_id: int, update_data: PostUpdateRequest,current_user: current_user_basic_dep):
+async def post_update(
+    session: db_dep,
+    post_id: int,
+    update_data: PostUpdateRequest,
+    current_user: current_user_basic_dep,
+):
     if not (current_user.is_superuser or current_user.id == post_id):
-        raise HTTPException(status_code=403, detail="Not authorized to delete this post  ")
+        raise HTTPException(
+            status_code=403, detail="Not authorized to delete this post  "
+        )
 
     stmt = select(Post).where(Post.id == post_id)
     res = session.execute(stmt)
@@ -137,7 +145,6 @@ async def post_update(session: db_dep, post_id: int, update_data: PostUpdateRequ
     return post
 
 
-
 @router.post("/like/{post_id}")
 async def add_like(session: db_dep, post_id: int):
     stmt = select(Post).where(Post.id == post_id)
@@ -145,8 +152,7 @@ async def add_like(session: db_dep, post_id: int):
 
     if not post:
         raise HTTPException(status_code=404, detail="Post not found")
-    
-    
+
     post.likes_count += 1
     session.commit()
     return {"status": "success", "total_count": post.likes_count}
@@ -154,11 +160,16 @@ async def add_like(session: db_dep, post_id: int):
 
 @router.patch("/{post_id}/")
 async def post_update_patch(
-    session: db_dep, post_id: int, update_data: PostUpdateRequest,current_user: current_user_basic_dep
+    session: db_dep,
+    post_id: int,
+    update_data: PostUpdateRequest,
+    current_user: current_user_basic_dep,
 ):
     if not (current_user.is_superuser or current_user.id == post_id):
-        raise HTTPException(status_code=403, detail="Not authorized to update this post  ")
-    
+        raise HTTPException(
+            status_code=403, detail="Not authorized to update this post  "
+        )
+
     stmt = select(Post).where(Post.id == post_id)
     res = session.execute(stmt)
     post = res.scalars().first()
@@ -183,9 +194,13 @@ async def post_update_patch(
 
 
 @router.delete("/{post_id}/")
-async def post_delete(session: db_dep, post_id: int,current_user: current_user_basic_dep):
+async def post_delete(
+    session: db_dep, post_id: int, current_user: current_user_basic_dep
+):
     if not (current_user.is_superuser or current_user.id == post_id):
-        raise HTTPException(status_code=403, detail="Not authorized to delete this post  ")
+        raise HTTPException(
+            status_code=403, detail="Not authorized to delete this post  "
+        )
 
     stmt = select(Post).where(Post.id == post_id)
     res = session.execute(stmt)
@@ -196,5 +211,3 @@ async def post_delete(session: db_dep, post_id: int,current_user: current_user_b
 
     session.delete(post)
     session.commit()
-
-

@@ -1,17 +1,25 @@
 from typing import Annotated
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 
 from fastapi import Depends, HTTPException, Request
-from fastapi.security import HTTPBasic, HTTPBasicCredentials
+from fastapi.security import (
+    HTTPBasic,
+    HTTPBasicCredentials,
+    HTTPAuthorizationCredentials,
+    HTTPBearer,
+)
 from sqlalchemy import select
 from sqlalchemy.orm import joinedload
 
 from app.database import db_dep
 from app.models import User, UserSessionToken
-from app.utils import verify_password
+from app.utils import verify_password, decode_jwt_token
+from app.config import settings
 
 basic = HTTPBasic()
 basic_auth_dep = Annotated[HTTPBasicCredentials, Depends(basic)]
+
+jwt_security = HTTPBearer(auto_error=False)
 
 
 def get_current_user(session: db_dep, credentials: basic_auth_dep):
@@ -62,3 +70,29 @@ def get_current_user_session(session: db_dep, request: Request):
 
 
 session_auth_dep = Annotated[User, Depends(get_current_user_session)]
+
+
+def get_current_user_jwt(
+    session: db_dep, credentials: HTTPAuthorizationCredentials = Depends(jwt_security)
+):
+    if not credentials:
+        raise HTTPException(status_code=401, detail="Not authenticated")
+
+    decode = decode_jwt_token(credentials.credentials)
+    user_id = decode["sub"]
+    exp = datetime.fromtimestamp(decode["exp"], tz=timezone.utc)
+
+    if exp < datetime.now(timezone.utc) + timedelta(
+        minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES
+    ):
+        raise HTTPException(status_code=401, detail="Token expired")
+
+    stmt = select(User).where(User.id == user_id).options(joinedload(User.profession))
+    user = session.execute(stmt).scalars().first()
+
+    if not user or user.is_deleted:
+        raise HTTPException(status_code=404, detail="User not found")
+    return user
+
+
+current_user_jwt_dep = Annotated[User, Depends(get_current_user_jwt)]

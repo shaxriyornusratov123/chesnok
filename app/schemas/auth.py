@@ -29,6 +29,10 @@ class UserLoginRequest(BaseModel):
     password: str
 
 
+class RefreshTokenRequest(BaseModel):
+    refresh_token: str
+
+
 class UserRegisterResponse(BaseModel):
     id: int
     email: EmailStr

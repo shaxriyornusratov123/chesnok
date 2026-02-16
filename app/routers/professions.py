@@ -14,9 +14,15 @@ router = APIRouter(prefix="/profession", tags=["Profession"])
 
 
 @router.post("/create/", response_model=ProfessionListResponse)
-async def create_profession(session: db_dep, create_data: ProfessionCreateRequest,current_user: current_user_basic_dep):
+async def create_profession(
+    session: db_dep,
+    create_data: ProfessionCreateRequest,
+    current_user: current_user_basic_dep,
+):
     if not (current_user.is_superuser or current_user.is_staff):
-        raise HTTPException(status_code=403, detail="Not authorized to create a profession  ")
+        raise HTTPException(
+            status_code=403, detail="Not authorized to create a profession  "
+        )
 
     profession = Profession(name=create_data.name)
     session.add(profession)
@@ -35,10 +41,15 @@ async def profession_list(session: db_dep):
 
 @router.put("/update/", response_model=ProfessionListResponse)
 async def profession_update(
-    session: db_dep, profession_id: int, update_data: ProfessionUpdateRequest,current_user: current_user_basic_dep
+    session: db_dep,
+    profession_id: int,
+    update_data: ProfessionUpdateRequest,
+    current_user: current_user_basic_dep,
 ):
     if not (current_user.is_superuser or current_user.is_staff):
-        raise HTTPException(status_code=403, detail="Not authorized to update this profession  ")
+        raise HTTPException(
+            status_code=403, detail="Not authorized to update this profession  "
+        )
 
     stmt = select(Profession).where(Profession.id == profession_id)
     res = session.execute(stmt)
@@ -54,9 +65,13 @@ async def profession_update(
 
 
 @router.delete("/delete/", status_code=204)
-async def profession_delete(session: db_dep, profession_id: int,current_user: current_user_basic_dep):
+async def profession_delete(
+    session: db_dep, profession_id: int, current_user: current_user_basic_dep
+):
     if not (current_user.is_superuser or current_user.is_staff):
-        raise HTTPException(status_code=403, detail="Not authorized to delete this profession  ")
+        raise HTTPException(
+            status_code=403, detail="Not authorized to delete this profession  "
+        )
 
     stmt = select(Profession).where(Profession.id == profession_id)
     res = session.execute(stmt)

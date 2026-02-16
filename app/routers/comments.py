@@ -59,9 +59,13 @@ async def update_comment(
 
 
 @router.delete("/{comment_id}")
-async def delete_comment(session: db_dep, comment_id: int,current_user: current_user_basic_dep):
+async def delete_comment(
+    session: db_dep, comment_id: int, current_user: current_user_basic_dep
+):
     if not (current_user.is_superuser or current_user.id == comment_id):
-        raise HTTPException(status_code=403, detail="Not authorized to delete this comment  ")
+        raise HTTPException(
+            status_code=403, detail="Not authorized to delete this comment  "
+        )
 
     stmt = select(Comment).where(Comment.id == comment_id)
     res = session.execute(stmt)
