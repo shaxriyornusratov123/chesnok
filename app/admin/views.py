@@ -77,3 +77,80 @@ class PostAdminView(ModelView):
         "updated_at"
     ]
 
+class CategoryAdminView(ModelView):
+    fields=[
+        "id",
+        "name",
+        "slug"
+    ]
+    
+    exclude_fields_from_create=[
+        "slug"
+    ]
+
+    exclude_fields_from_edit=[
+        "id"
+    ]
+
+class TagAdminView(ModelView):
+    fields=[
+        "id",
+        "name",
+        "slug"
+    ]
+
+    exclude_fields_from_create=[
+        "slug"
+    ]
+
+    exclude_fields_from_edit=[
+        "id"
+    ]
+
+class ProfessionAdminView(ModelView):
+    fields=[
+        "id",
+        "name"
+    ]
+
+    exclude_fields_from_edit=[
+        "id"
+    ]
+
+class MediaAdminView(ModelView):
+    fields=[
+        "id",
+        "url"
+    ]
+
+    exclude_fields_from_edit=[
+        "id",
+        "url"
+    ]
+
+class CommentAdminView(ModelView):
+    fields=[
+        "id",
+        "user_id",
+        "post_id",
+        "is_active",
+        "created_at",
+        "updated_at"
+    ]
+
+    exclude_fields_from_create=[
+        "id",
+        "user_id",
+        "is_active",
+        "created_at",
+        "updated_at"
+    ]
+
+    exclude_fields_from_edit=[
+        "id",
+        "user_id",
+        "created_at",
+        "updated_at"
+    ]
+
+    
