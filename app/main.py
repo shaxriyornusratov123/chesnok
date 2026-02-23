@@ -10,8 +10,10 @@ from app.routers import (
     weather_router,
     lesson_router,
     admin_router,
+
 )
 from app.exceptions import NimadirException, nimadir_error_exc, zero_devision_error_exc
+from app.admin.settings import admin
 
 
 app = FastAPI(
@@ -32,4 +34,7 @@ app.include_router(lesson_router)
 
 #  Exception Handlers
 app.add_exception_handler(ZeroDivisionError, zero_devision_error_exc)
-app.add_exception_handler(NimadirException, nimadir_error_exc) 
+app.add_exception_handler(NimadirException, nimadir_error_exc)
+
+
+admin.mount_to(app=app)

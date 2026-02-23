@@ -146,14 +146,13 @@ async def post_update(
 
 
 @router.post("/like/{post_id}")
-async def add_like(session: db_dep, post_id: int,request: Request):
+async def add_like(session: db_dep, post_id: int, request: Request):
     stmt = select(Post).where(Post.id == post_id)
     post = session.execute(stmt).scalars().first()
 
     if not post:
         raise HTTPException(status_code=404, detail="Post not found")
-    
-    
+
     post.likes_count += 1
     session.commit()
     return {"status": "success", "total_count": post.likes_count}

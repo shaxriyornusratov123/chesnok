@@ -63,8 +63,8 @@ def decode_jwt_token(token: str):
 
 def send_email(to_email: str,subject: str,body: str):
     msg=MIMEText(body)
-    msg=["Subject"]=subject
-    msg=["Body"]=body
+    msg["Subject"]=subject
+    msg["Body"]=body
     msg["From"]=settings.EMAIL_ADDRESS
     msg["To"]=to_email
 

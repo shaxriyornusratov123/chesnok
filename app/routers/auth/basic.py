@@ -24,8 +24,7 @@ async def user_profile_update(
     session.commit()
     session.refresh(current_user)
 
-    return current_user 
-
+    return current_user
 
 
 @router.delete("/profile", status_code=204)

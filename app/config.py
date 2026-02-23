@@ -4,8 +4,8 @@ from pydantic_settings import BaseSettings
 class Settings(BaseSettings):
     PROJECT_NAME: str
     DEBUG: bool
-    MEDIA_PATH: str= "media"
-    BASE_URL: str= "https://chesnok.uz"
+    MEDIA_PATH: str = "media/"
+    BASE_URL: str = "https://chesnok.uz"
 
     SESSION_ID_EXPIRE_DAYS: int = 1
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
@@ -22,11 +22,11 @@ class Settings(BaseSettings):
 
     # Email settings
 
-    EMAIL_ADDRESS: str = "shaxriyornusratov123@gmail.com"
-    SMTP_SERVER: str = "smpt.gmail.com"
+    EMAIL_ADDRESS: str = "nsrtv123@gmail.com"
+    SMTP_SERVER: str = "smtp.gmail.com"
     SMTP_PORT: int = 587
-    EMAIL_PASSWORD: str 
-    REDIS_URL: str= "redis:://localhost:6329/4"
+    EMAIL_PASSWORD: str
+    REDIS_URL: str = "redis://localhost:6379/4"
 
     class Config:
         env_file = ".env"

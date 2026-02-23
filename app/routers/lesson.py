@@ -2,7 +2,7 @@ from typing import Annotated
 from pathlib import Path
 import shutil
 
-from fastapi import APIRouter, HTTPException, Header,Form,File, UploadFile
+from fastapi import APIRouter, HTTPException, Header, Form, File, UploadFile
 from requests import session
 from sqlalchemy import select
 
@@ -54,26 +54,35 @@ async def protected_admin(session: db_dep, email: str, X_chesnok_token: str = He
 
     return user
 
+
 @router.post("/test_login")
-async def test_login(username:Annotated[str, Form()],password: Annotated[str,Form()]):
+async def test_login(
+    username: Annotated[str, Form()], password: Annotated[str, Form()]
+):
     return {"username": username, "password": password}
 
-@router.post("/uploadfile")
-async def upload_file(file: UploadFile,session: db_dep):
-    if file.size > 1024 * 1024 *1 :
-        raise HTTPException(status_code=400, detail="File size exceeds the limit of 1MB.")
 
-    file_ext=Path(file.filename).suffix.lower()
+@router.post("/uploadfile")
+async def upload_file(file: UploadFile, session: db_dep):
+    if file.size > 1024 * 1024 * 1:
+        raise HTTPException(
+            status_code=400, detail="File size exceeds the limit of 1MB."
+        )
+
+    file_ext = Path(file.filename).suffix.lower()
     if file_ext not in [".jpg", ".jpeg", ".png"]:
-        raise HTTPException(status_code=400, detail="Invalid file type. Only jpg, jpeg, and png are allowed.")
-    
-    path=Path(settings.MEDIA_PATH)
+        raise HTTPException(
+            status_code=400,
+            detail="Invalid file type. Only jpg, jpeg, and png are allowed.",
+        )
+
+    path = Path(settings.MEDIA_PATH)
     path.mkdir(exist_ok=True)
-    res=path/file.filename
+    res = path / file.filename
     with open(res, "wb") as buffer:
         shutil.copyfileobj(file.file, buffer)
 
-    image=Media(
+    image = Media(
         url=f"{settings.MEDIA_PATH}/{file.filename}",
     )
 
@@ -81,7 +90,7 @@ async def upload_file(file: UploadFile,session: db_dep):
     session.commit()
     session.refresh(image)
 
-    return {"filename": file.filename,"res":f"{settings.BASE_URL}/{image.url}"}  
+    return {"filename": file.filename, "res": f"{settings.BASE_URL}/{image.url}"}
 
 
 @router.get("/exc/")
