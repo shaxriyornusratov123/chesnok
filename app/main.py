@@ -11,6 +11,7 @@ from app.routers import (
     lesson_router,
     admin_router,
 )
+from app.exceptions import NimadirException, nimadir_error_exc, zero_devision_error_exc
 
 
 app = FastAPI(
@@ -27,3 +28,8 @@ app.include_router(user_router)
 app.include_router(comment_router)
 app.include_router(weather_router)
 app.include_router(lesson_router)
+
+
+#  Exception Handlers
+app.add_exception_handler(ZeroDivisionError, zero_devision_error_exc)
+app.add_exception_handler(NimadirException, nimadir_error_exc) 

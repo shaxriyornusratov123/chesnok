@@ -21,8 +21,11 @@ async def user_profile_update(
     for attr, value in update_data.model_dump(exclude_unset=True).items():
         setattr(current_user, attr, value)
 
-        session.commit()
-        session.refresh(current_user)
+    session.commit()
+    session.refresh(current_user)
+
+    return current_user 
+
 
 
 @router.delete("/profile", status_code=204)

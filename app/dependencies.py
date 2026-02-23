@@ -31,10 +31,12 @@ def get_current_user(session: db_dep, credentials: basic_auth_dep):
     user = session.execute(stmt).scalars().first()
 
     if not user:
-        raise HTTPException(status_code=404, detail="user not found")
+        raise HTTPException(status_code=404, detail="User not found")
 
-    if not verify_password:
-        raise HTTPException(status_code=401, detail="incorrect password")
+    if not verify_password(credentials.password, user.password_hash):
+        raise HTTPException(status_code=401, detail="Incorrect password")
+
+    return user
 
 
 current_user_basic_dep = Annotated[User, Depends(get_current_user)]
@@ -61,7 +63,7 @@ def get_current_user_session(session: db_dep, request: Request):
         .where(User.id == session_obj.user_id)
         .options(joinedload(User.profession))
     )
-    user = session.execute(stmt).scalars().first()
+    user = session.execute(stmt).scalars().first_or_none()
 
     if not user or user.is_deleted:
         raise HTTPException(status_code=404, detail="User not founded")
@@ -82,9 +84,7 @@ def get_current_user_jwt(
     user_id = decode["sub"]
     exp = datetime.fromtimestamp(decode["exp"], tz=timezone.utc)
 
-    if exp < datetime.now(timezone.utc) + timedelta(
-        minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES
-    ):
+    if exp < datetime.now(timezone.utc):
         raise HTTPException(status_code=401, detail="Token expired")
 
     stmt = select(User).where(User.id == user_id).options(joinedload(User.profession))

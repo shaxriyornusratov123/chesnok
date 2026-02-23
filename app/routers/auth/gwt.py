@@ -44,4 +44,4 @@ async def refresh(session: db_dep, data: RefreshTokenRequest):
 
 @router.get("/me", response_model=UserProfileResponse)
 async def me(current_user: current_user_jwt_dep):
-    return current_user
+    return current_user 

@@ -1,3 +1,6 @@
+import redis 
+import smtplib
+from email.mime.text import MIMEText
 from datetime import datetime, timedelta, timezone
 from fastapi import HTTPException
 
@@ -57,3 +60,17 @@ def decode_jwt_token(token: str):
         return payload
     except JWTError as e:
         raise HTTPException(status_code=401, detail=f"Invalid token: {e}")
+
+def send_email(to_email: str,subject: str,body: str):
+    msg=MIMEText(body)
+    msg=["Subject"]=subject
+    msg=["Body"]=body
+    msg["From"]=settings.EMAIL_ADDRESS
+    msg["To"]=to_email
+
+    with smtplib.SMTP(settings.SMTP_SERVER, settings.SMTP_PORT) as server:
+        server.starttls()
+        server.login(settings.EMAIL_ADDRESS,settings.EMAIL_PASSWORD)
+        server.send_message(msg)
+
+redis_client = redis.from_url(settings.REDIS_URL)
